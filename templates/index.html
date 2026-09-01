@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>🎲 Dice Duel — 2-Player Dice Game</title>
+  <meta name="description" content="A premium 2-player dice game. Roll the dice, score 30 points first, and win! Rolling 1 or 6 grants an extra throw." />
+  <meta name="theme-color" content="#080b14" />
+
+  <!-- Favicon (inline SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+
+<body>
+
+  <!-- Particle background canvas -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- ============================================================
+       WINNER OVERLAY
+       ============================================================ -->
+  <div id="winner-overlay" class="winner-overlay" role="dialog" aria-modal="true" aria-labelledby="winner-name">
+    <div class="winner-card">
+      <div class="confetti-container" id="confetti-container" aria-hidden="true"></div>
+      <span class="winner-trophy" aria-hidden="true">🏆</span>
+      <p class="winner-label">🎉 We have a winner!</p>
+      <h2 class="winner-name" id="winner-name">Player 1</h2>
+      <p class="winner-score-text" id="winner-score-text">Reached <span>30 points</span> to win!</p>
+      <button id="btn-play-again" class="btn-play-again">🔄 Play Again</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN APP
+       ============================================================ -->
+  <div class="app-wrapper">
+
+    <!-- Header -->
+    <header class="game-header">
+      <div class="logo">
+        <span class="logo-icon" aria-hidden="true">🎲</span>
+        <h1>Dice Duel</h1>
+      </div>
+      <p class="subtitle">A 2-Player Turn-Based Dice Game</p>
+      <div class="target-badge">
+        <span>🎯</span>
+        <span>First to <strong>30 points</strong> wins &nbsp;·&nbsp; Roll 1 or 6 = Extra Throw</span>
+      </div>
+    </header>
+
+    <!-- ── Main 3-column game area ── -->
+    <main class="game-area" id="game-area">
+
+      <!-- ── Player 1 Card ── -->
+      <section id="card-p1" class="player-card p1 active" aria-label="Player 1">
+        <div class="player-tag">
+          <span class="dot" aria-hidden="true"></span>
+          Player 1
+        </div>
+
+        <h2>Player 1</h2>
+
+        <!-- Score -->
+        <div class="score-container">
+          <p class="score-label">Score</p>
+          <p id="p1-score" class="score-value" aria-live="polite">0</p>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0" aria-label="Player 1 progress">
+          <div class="progress-bar-bg">
+            <div id="p1-progress" class="progress-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="progress-bar-label">
+            <span id="p1-prog-label">0 / 30</span>
+            <span>Goal: 30</span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div id="p1-status" class="player-status">
+          <span class="active-indicator">▶ Your Turn</span>
+        </div>
+
+        <!-- Roll history chips -->
+        <div id="p1-chips" class="roll-chips" aria-label="Player 1 roll history"></div>
+      </section>
+
+      <!-- ── Centre: Dice + Controls ── -->
+      <div class="dice-column">
+
+        <!-- Turn indicator -->
+        <div class="turn-banner">
+          <p class="turn-label">Current Turn</p>
+          <p id="turn-name" class="turn-name" style="color: var(--accent-p1)">Player 1</p>
+        </div>
+
+        <!-- Dice display -->
+        <div class="dice-display">
+          <div id="glow-p1" class="dice-glow-ring p1-glow active" aria-hidden="true"></div>
+          <div id="glow-p2" class="dice-glow-ring p2-glow" aria-hidden="true"></div>
+          <img
+            id="dice-img"
+            src="{{ url_for('static', filename='images/dice-1.jpg') }}"
+            alt="Dice showing 1"
+            width="160"
+            height="160"
+          />
+          <div id="last-roll-badge" class="last-roll-badge" aria-live="polite" aria-label="Last roll result"></div>
+        </div>
+
+        <!-- Roll event message -->
+        <p id="roll-event-msg" class="roll-event-msg" aria-live="polite">
+          <span style="color:var(--text-muted)">Press Roll to begin!</span>
+        </p>
+
+        <!-- Roll button -->
+        <button id="btn-roll" class="btn-roll" aria-label="Roll dice">
+          <span class="btn-icon" aria-hidden="true">🎲</span>
+          Roll — Player 1
+        </button>
+
+      </div><!-- /.dice-column -->
+
+      <!-- ── Player 2 Card ── -->
+      <section id="card-p2" class="player-card p2" aria-label="Player 2">
+        <div class="player-tag">
+          <span class="dot" aria-hidden="true"></span>
+          Player 2
+        </div>
+
+        <h2>Player 2</h2>
+
+        <!-- Score -->
+        <div class="score-container">
+          <p class="score-label">Score</p>
+          <p id="p2-score" class="score-value" aria-live="polite">0</p>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0" aria-label="Player 2 progress">
+          <div class="progress-bar-bg">
+            <div id="p2-progress" class="progress-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="progress-bar-label">
+            <span id="p2-prog-label">0 / 30</span>
+            <span>Goal: 30</span>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div id="p2-status" class="player-status">
+          <span style="color:var(--text-muted); font-size:0.82rem;">Waiting...</span>
+        </div>
+
+        <!-- Roll history chips -->
+        <div id="p2-chips" class="roll-chips" aria-label="Player 2 roll history"></div>
+      </section>
+
+    </main><!-- /.game-area -->
+
+    <!-- ── Bottom: Log + Controls ── -->
+    <div class="bottom-section">
+
+      <!-- Event Log -->
+      <div class="log-panel">
+        <h3>
+          <span aria-hidden="true">📋</span>
+          Roll History
+        </h3>
+        <ul id="log-list" aria-label="Roll history log" aria-live="polite"></ul>
+      </div>
+
+      <!-- Side Controls -->
+      <div class="side-controls">
+        <button id="btn-new-game" class="btn-new-game" aria-label="Start a new game">
+          <span aria-hidden="true">🔄</span>
+          New Game
+        </button>
+        <div style="font-size: 0.7rem; color: var(--text-muted); text-align:center; padding: 4px 8px; line-height:1.5;">
+          <kbd style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-family:monospace">Space</kbd> to Roll
+          <br>
+          <kbd style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-family:monospace">N</kbd> New Game
+        </div>
+      </div>
+
+    </div><!-- /.bottom-section -->
+
+  </div><!-- /.app-wrapper -->
+
+  <!-- Script -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
