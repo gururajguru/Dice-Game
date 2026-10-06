@@ -80,7 +80,7 @@ class DiceGame:
     """
 
     def __init__(self, player_names: Optional[list[str]] = None) -> None:
-        names = player_names or ["Player 1", "Player 2"]
+        names = player_names or [f"Player {i+1}" for i in range(NUM_PLAYERS)]
         if len(names) != NUM_PLAYERS:
             raise ValueError(f"Exactly {NUM_PLAYERS} player names required.")
         self.state = GameState(

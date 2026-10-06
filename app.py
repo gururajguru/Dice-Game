@@ -21,14 +21,17 @@ def _get_game() -> DiceGame:
     Fetch the game state stored in the server-side session.
     If none exists (or it was cleared), start a fresh game.
     """
-    if "game_state" not in session:
-        session["game_state"] = None
+    if "session_id" not in session:
+        session["session_id"] = secrets.token_hex(16)
 
-    game = app.config.get("game_instance")
-    if game is None:
-        game = DiceGame()
-        app.config["game_instance"] = game
-    return game
+    session_id = session["session_id"]
+    games = app.config.setdefault("games", {})
+
+    if session_id not in games:
+        games[session_id] = DiceGame()
+    
+    return games[session_id]
+
 
 
 # ---------------------------------------------------------------------------
